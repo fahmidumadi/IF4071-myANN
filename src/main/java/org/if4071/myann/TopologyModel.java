@@ -6,6 +6,7 @@
 package org.if4071.myann;
 
 import java.util.ArrayList;
+import weka.core.Instance;
 
 /**
  *
@@ -13,6 +14,7 @@ import java.util.ArrayList;
  */
 public class TopologyModel {
     private ArrayList<Node> nodes;
+    private ArrayList<Integer> layers;
     private double initWeightValues;
     private int iterationNumber;
     private double errorThreshold;
@@ -24,6 +26,7 @@ public class TopologyModel {
     
     public TopologyModel(){
         nodes = new ArrayList<>();
+        layers = new ArrayList<>();
         initWeightValues = 0.0;
         iterationNumber = 0;
         errorThreshold = 0.0;
@@ -37,6 +40,12 @@ public class TopologyModel {
     }
     public ArrayList<Node> getNodes(){
         return nodes;
+    }
+    public void setLayers(ArrayList<Integer> newLayers){
+        layers = newLayers;
+    }
+    public ArrayList<Integer> getLayers(){
+        return layers;
     }
     public void setInitWeightValues(double newInitWeightValues){
         initWeightValues = newInitWeightValues;
@@ -79,5 +88,59 @@ public class TopologyModel {
     }
     public boolean isUseErrorThresholdTerminate(){
         return useErrorThresholdTerminate;
+    }
+    public void addInputLayer(int n){
+        layers.add(0,n);
+    }
+    public void addOutputLayer(int n){
+        layers.add(layers.size(), n);
+    }
+    public void removeLayer(int indexLayer){
+        layers.remove(indexLayer);
+    }
+    public void connectNodes(){
+        createNodes();
+    }
+    
+    private void setBiasValue(double bias){
+        for (Node node : nodes) {
+            node.setBias(bias);
+        }
+    }
+    private void createNodes(){
+        int id=0;
+        for (Integer layer : layers) {
+            for (int j = 0; j < layer; j++) {
+                nodes.add(new Node(id));
+                id++;
+            }
+        }
+    }
+    public void insertDataToInputNodes (Instance inputData){
+        for(int i=0;i<inputData.numAttributes()-1;i++){
+            nodes.get(i).setOutput(inputData.value(i));
+        }
+    }
+    /*tanyain*/
+    public void insertDataToOutputNodes (Instance inputData){
+        int classValue = (int) inputData.classValue();
+        for(int i=0;i<inputData.numClasses();i++){
+            Node n = nodes.get(nodes.size()-layers.get(layers.size()-1)+i);
+            if(i==classValue){
+                n.setTarget(1);
+            }
+            else{
+                n.setTarget(0);
+            }
+        }
+    }
+    public void resetNodesInput(){
+        for(Node n : nodes){
+            n.setInput(0);
+        }
+    }
+    public Node getOutputNode(int n)
+    {
+        return nodes.get(nodes.size()-layers.get(layers.size()-1)+n);
     }
 }
