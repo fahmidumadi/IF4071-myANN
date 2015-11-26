@@ -45,7 +45,7 @@ public class Node {
         output = 0;
         target = 0;
         error = 0;
-        bias = 0;
+        bias = 1;
         biasWeight = 0;
     }
     public Node(int id){
@@ -54,7 +54,7 @@ public class Node {
         output = 0;
         target = 0;
         error = 0;
-        bias = 0;
+        bias = 1;
         biasWeight = 0;
     }
     public void setID(int newID){
@@ -109,5 +109,15 @@ public class Node {
     }
     public double sigmoid(double x){
         return (1 / (1+(Math.exp(-x))));
+    }
+    @Override
+    public String toString() {
+        StringBuffer sb = new StringBuffer();
+        sb.append("Node ").append(id).append("\n");
+        sb.append("input: ").append(input).append("\n");
+        sb.append("output: ").append(output).append("\n");
+        sb.append("target: ").append(target).append("\n");
+        sb.append("error: ").append(error).append("\n");
+        return sb.toString();
     }
 }
