@@ -5,6 +5,8 @@
  */
 package org.if4071.myann;
 
+import java.util.Random;
+
 /**
  *
  * @author Fahmi
@@ -38,7 +40,7 @@ public class Node {
      * bobot nilai bias
      */
     private double biasWeight;
-    
+    private double prevDeltaWeight;
     public Node(){
         id = 0;
         input = 0;
@@ -46,7 +48,8 @@ public class Node {
         target = 0;
         error = 0;
         bias = 1;
-        biasWeight = 0;
+        biasWeight = randomBias();
+        prevDeltaWeight = 0;
     }
     public Node(int id){
         this.id = id;
@@ -55,7 +58,8 @@ public class Node {
         target = 0;
         error = 0;
         bias = 1;
-        biasWeight = 0;
+        biasWeight = randomBias();
+        prevDeltaWeight = 0;
     }
     public void setID(int newID){
         id = newID;
@@ -99,7 +103,20 @@ public class Node {
     public double getBiasWeight(){
         return biasWeight;
     }
-    public int sign(double x){
+    public void setPrevDeltaWeight(double deltaWeight){
+        prevDeltaWeight = deltaWeight;
+    }
+    public double getPrevDeltaWeight(){
+        return prevDeltaWeight;
+    }
+    private double randomBias(){
+        double rangeMin = -0.05;
+        double rangeMax = 0.05;
+        Random r = new Random();
+        biasWeight = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
+        return biasWeight;
+    }
+    public static int sign(double x){
         if(x>=0){
             return 1;
         }
@@ -107,7 +124,7 @@ public class Node {
             return -1;
         }
     }
-    public double sigmoid(double x){
+    public static double sigmoid(double x){
         return (1 / (1+(Math.exp(-x))));
     }
     @Override

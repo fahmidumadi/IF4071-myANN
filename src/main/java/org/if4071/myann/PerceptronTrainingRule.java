@@ -6,6 +6,7 @@
 package org.if4071.myann;
 
 import weka.classifiers.Classifier;
+import weka.classifiers.Evaluation;
 import weka.core.Capabilities;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -81,12 +82,86 @@ public class PerceptronTrainingRule extends Classifier{
         }
         int epochError;
         int loop = 0;
+        do{
+            epochError = 0;
+            int target;
+            for(int i=0; i < dataSet.numInstances();i++){
+                Instance instance = dataSet.instance(i);
+                if (instance.classValue() == 1){
+                    target = 1;
+                }else{
+                    target = -1;
+                }
+                for(int j=0;j< topology.getWeights().size();j++){
+                    Weight weight = topology.getWeights().get(j);
+                    weight.getNode2().setInput(weight.getNode2().getInput()+ (weight.getNode1().getOutput() * weight.getWeight()));
+                }
+                outputNode.setInput(outputNode.getInput()+(outputNode.getBias()*outputNode.getBiasWeight()));
+                int output = Node.sign(outputNode.getInput());
+                for (int j = 0; j< topology.getWeights().size();j++){
+                    Weight weight = topology.getWeights().get(j);
+                    double delta = (topology.getLearningRate()*(target-output)*outputNode.getBias()) + 
+                            topology.getMomentumRate()*outputNode.getPrevDeltaWeight();
+                    weight.setPrevDeltaWeight(delta);
+                    weight.setWeight(weight.getWeight()+delta);
+                }
+                double biasWeight = outputNode.getBiasWeight();
+                double delta = (topology.getLearningRate() * (target - output) * outputNode.getBias()) +
+                                topology.getMomentumRate()* outputNode.getPrevDeltaWeight();
+                outputNode.setPrevDeltaWeight(delta);
+                outputNode.setBiasWeight(biasWeight + delta);
+                topology.resetNodesInput();
+                for (int j = 0; j < topology.getWeights().size(); j++) {
+                    Weight weight = topology.getWeights().get(j);
+                    weight.getNode2().setInput(weight.getNode2().getInput() + (weight.getNode1().getOutput() * weight.getWeight()));
+                }
+                outputNode.setInput(outputNode.getInput() + (outputNode.getBias() * outputNode.getBiasWeight()));
+                output = Node.sign(outputNode.getInput());
+                int squaredError = (output-target)*(output-target);
+                epochError += squaredError;
+            }
+            epochError = epochError / 2;
+            loop++;
+        }while((epochError > threshold) && 
+                (!topology.isUseIterationTerminate() || (loop < topology.getIterationNumber())
+                ));
     }
     
     @Override
-    public double classifyInstance(Instance data){
-        //ganti output nanti
-        int output = 0;
-        return output;
+    public double classifyInstance(Instance data) throws Exception{
+        Instance instance = new Instance(data);
+        nomToBinFilter.input(instance);
+        instance = nomToBinFilter.output();
+        normalizeFilter.input(instance);
+        instance = normalizeFilter.output();
+
+        topology.insertDataToInputNodes(instance);
+        Node outputNode = topology.getOutputNode(0);
+        topology.resetNodesInput();
+
+        for (int j = 0; j < topology.getWeights().size(); j++) {
+            Weight weight = topology.getWeights().get(j);
+            weight.getNode2().setInput(weight.getNode2().getInput() + (weight.getNode1().getOutput() * weight.getWeight()));
+        }
+        outputNode.setInput(outputNode.getInput() + (outputNode.getBias() * outputNode.getBiasWeight()));
+        int output = Node.sign(outputNode.getInput());
+        if (output==1){
+            return 1;
+        }else{
+            return 0;
+        }
+        /*public static void main(String [] args) throws Exception {
+            Instances dataset = Util.readARFF("weather.numeric.arff");
+            TopologyModel topology = new TopologyModel();
+            topology.setLearningRate(0.1);
+            topology.setInitWeightValues(0.0);
+            topology.setMomentumRate(0.0);
+            topology.setIterationNumber(500);
+            PerceptronTrainingRule ptr = new PerceptronTrainingRule(topology);
+            ptr.buildClassifier(dataset);
+            Evaluation eval = Util.evaluateModel(ptr, dataset);
+            System.out.println(eval.toSummaryString());
+            System.out.println(eval.toMatrixString());
+        }*/
     }
 }

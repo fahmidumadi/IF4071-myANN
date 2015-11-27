@@ -16,21 +16,25 @@ public class Weight {
     private Node n1;
     private Node n2;
     private double weight;
+    private double prevDeltaWeight;
     /*METHOD*/
     public Weight(){
         n1 = new Node();
         n2 = new Node();
         weight = randomWeight();
+        prevDeltaWeight = 0;
     }
     public Weight(Node newN1, Node newN2){
         n1 = newN1;
         n2 = newN2;
         weight = randomWeight();
+        prevDeltaWeight = 0;
     }
     public Weight(Node newN1, Node newN2, double newWeight){
         n1 = newN1;
         n2 = newN2;
         weight = newWeight;
+        prevDeltaWeight = 0;
     }
     public void setNode1(Node newNode){
         n1 = newNode;
@@ -49,6 +53,12 @@ public class Weight {
     }
     public double getWeight(){
         return weight;
+    }
+    public void setPrevDeltaWeight(double deltaWeight){
+        prevDeltaWeight = deltaWeight;
+    }
+    public double getPrevDeltaWeight(){
+        return prevDeltaWeight;
     }
     private double randomWeight()
     {

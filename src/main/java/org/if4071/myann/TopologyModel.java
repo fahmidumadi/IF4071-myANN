@@ -15,10 +15,12 @@ import weka.core.Instance;
 public class TopologyModel {
     private ArrayList<Node> nodes;
     private ArrayList<Integer> layers;
+    private ArrayList<Weight> weights;
     private double initWeightValues;
     private int iterationNumber;
     private double errorThreshold;
     private double learningRate;
+    private double momentumRate;
     private boolean givenWeight;
     private boolean useIterationTerminate;
     private boolean useErrorThresholdTerminate;
@@ -27,10 +29,12 @@ public class TopologyModel {
     public TopologyModel(){
         nodes = new ArrayList<>();
         layers = new ArrayList<>();
+        weights = new ArrayList<>();
         initWeightValues = 0.0;
         iterationNumber = 0;
         errorThreshold = 0.0;
         learningRate = 0.1;
+        momentumRate = 0.1;
         givenWeight = false;
         useIterationTerminate = false;
         useErrorThresholdTerminate = false;
@@ -46,6 +50,12 @@ public class TopologyModel {
     }
     public ArrayList<Integer> getLayers(){
         return layers;
+    }
+    public void setWeights(ArrayList<Weight> newWeights){
+        weights = newWeights;
+    }
+    public ArrayList<Weight> getWeights(){
+        return weights;
     }
     public void setInitWeightValues(double newInitWeightValues){
         initWeightValues = newInitWeightValues;
@@ -70,6 +80,12 @@ public class TopologyModel {
     }
     public double getLearningRate(){
         return learningRate;
+    }
+    public void setMomentumRate(double newMomentumRate){
+        momentumRate = newMomentumRate;
+    }
+    public double getMomentumRate(){
+        return momentumRate;
     }
     public void setGivenWeight(boolean givenWeight){
         this.givenWeight = givenWeight;
@@ -107,12 +123,48 @@ public class TopologyModel {
             node.setBias(bias);
         }
     }
+    private void setBiasWeight(){
+        for (Node node : nodes) {
+            node.setBiasWeight(initWeightValues);
+        }
+    }
     private void createNodes(){
         int id=0;
         for (Integer layer : layers) {
             for (int j = 0; j < layer; j++) {
                 nodes.add(new Node(id));
                 id++;
+            }
+        }
+    }
+    private void createWeight(){
+        int currentLayer = 0;
+        int nextLayer = 0;
+        int baseID = 0;
+        if (givenWeight) {
+            setBiasWeight();
+            for(int i=0;i<layers.size()-1;i++){
+                currentLayer = layers.get(i);
+                nextLayer = layers.get(i+1);
+                for(int j=0; j<currentLayer; j++){
+                    for(int k=0; k<nextLayer; k++){
+                        weights.add(new Weight(nodes.get(baseID+j), 
+                                nodes.get(baseID+currentLayer+k), initWeightValues));
+                    }
+                }
+                baseID += currentLayer;
+            }
+        } else {//not given weight
+            for(int i=0;i<layers.size()-1;i++){
+                currentLayer = layers.get(i);
+                nextLayer = layers.get(i+1);
+                for(int j=0; j<currentLayer; j++){
+                    for(int k=0; k<nextLayer; k++){
+                        weights.add(new Weight(nodes.get(baseID+j), 
+                                nodes.get(baseID+currentLayer+k)));
+                    }
+                }
+                baseID += currentLayer;
             }
         }
     }
